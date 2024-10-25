@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 			},
 			{ status: 201 },
 		);
-	} catch (error: any) {
+	} catch (error: unknown) {
 		return NextResponse.json(
 			{ message: 'error in creating user', error },
 			{ status: 400 },

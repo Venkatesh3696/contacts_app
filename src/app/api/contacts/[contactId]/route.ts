@@ -1,8 +1,14 @@
-import syncDatabase from '@/lib/db/syncDatabase';
 import Contact from '@/models/contacts';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(
+	request: Request,
+	context: {
+		params: {
+			contactId: string;
+		};
+	},
+) {
 	try {
 		const { contactId } = context.params;
 		const userHeader = request.headers.get('X-User');
@@ -36,7 +42,14 @@ export async function GET(request: Request, context: { params: any }) {
 	}
 }
 
-export async function PUT(request: Request, conetxt: { params: any }) {
+export async function PUT(
+	request: Request,
+	conetxt: {
+		params: {
+			contactId: string;
+		};
+	},
+) {
 	try {
 		const userHeader = request.headers.get('X-User');
 		const user = userHeader ? JSON.parse(userHeader) : null;
@@ -64,7 +77,14 @@ export async function PUT(request: Request, conetxt: { params: any }) {
 	}
 }
 
-export async function DELETE(request: Request, conetxt: { params: any }) {
+export async function DELETE(
+	request: Request,
+	conetxt: {
+		params: {
+			contactId: string;
+		};
+	},
+) {
 	try {
 		const { contactId } = conetxt.params;
 		console.log({ contactId });
