@@ -43,25 +43,9 @@ export async function POST(request: Request) {
 			);
 		}
 
-		interface MyDataType {
-			name: string;
-			email: string;
-			phone: string;
-			address: string;
-			timezone: string;
-		}
-
-		const validatedRecords = (
-			row: unknown,
-		): {
-			name: string;
-			email: string;
-			phone: string;
-			address: string;
-			timezone: string;
-		} => {
-			const typedRow = row as MyDataType;
-
+		// Transform the data array instead of defining a function
+		const validatedRecords = data.map((row: unknown) => {
+			const typedRow = row as CSVRow;
 			return {
 				name: typedRow.name,
 				email: typedRow.email,
@@ -69,10 +53,10 @@ export async function POST(request: Request) {
 				address: typedRow.address,
 				timezone: typedRow.timezone,
 			};
-		};
+		});
 
 		const insertedContacts = await Promise.all(
-			validatedRecords.map(async (row: CSVRow) => {
+			validatedRecords.map(async (row) => {
 				try {
 					return await Contact.create({
 						name: row.name,
@@ -92,9 +76,15 @@ export async function POST(request: Request) {
 			}),
 		);
 
+		// Filter out any null values from failed insertions
+		const successfulInserts = insertedContacts.filter(
+			(contact): contact is NonNullable<typeof contact> =>
+				contact !== undefined && contact !== null,
+		);
+
 		return NextResponse.json({
-			message: `Successfully imported ${insertedContacts.length} contacts`,
-			contacts: insertedContacts,
+			message: `Successfully imported ${successfulInserts.length} contacts`,
+			contacts: successfulInserts,
 		});
 	} catch (error: unknown) {
 		if (error instanceof Error) {
@@ -102,8 +92,10 @@ export async function POST(request: Request) {
 				{ error: error?.message || 'Error processing CSV file' },
 				{ status: 500 },
 			);
-		} else {
-			console.error('Upload error:', error);
 		}
+		return NextResponse.json(
+			{ error: 'Unknown error occurred' },
+			{ status: 500 },
+		);
 	}
 }
