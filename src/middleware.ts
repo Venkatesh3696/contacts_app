@@ -49,7 +49,7 @@ export async function middleware(request: AuthenticatedRequest) {
 export const config = {
 	matcher: [
 		// Add your protected routes here
-		'/api/:path*',
+		'/api/:path/contacts*',
 		// Exclude auth routes if needed
 		'/((?!api/auth).*)',
 	],
