@@ -4,14 +4,16 @@ import User from '@/models/users';
 
 import { generateToken } from '@/lib/helpers/jwt';
 
+type User = {
+	id: number;
+	password: string;
+};
+
 export async function POST(request: Request) {
 	try {
 		const { email, password } = await request.json();
 
-		const user: {
-			id: number;
-			password: string;
-		} | null = await User.findOne({ where: { email } });
+		const user = (await User.findOne({ where: { email } })) as User | null;
 
 		if (!user) {
 			return new Response('User not found', { status: 404 });
@@ -28,9 +30,8 @@ export async function POST(request: Request) {
 			{ status: 200 },
 		);
 
-		const payload = { userId: user.id };
+		const payload = { userId: user.id.toString() };
 		const token = await generateToken(payload);
-		console.log({ token, message: 'in loin .js' });
 
 		response.cookies.set({
 			name: 'token',

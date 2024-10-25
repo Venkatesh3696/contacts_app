@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import Papa from 'papaparse';
 import Contact from '@/models/contacts';
 
+interface CSVRow {
+	name: string;
+	email: string;
+	phone: string;
+	address: string;
+	timezone: string;
+}
+
 export async function POST(request: Request) {
 	try {
 		const userHeader = request.headers.get('X-User');
@@ -11,16 +19,16 @@ export async function POST(request: Request) {
 		const formData: FormData = await request.formData();
 		const file: FormDataEntryValue | null = formData.get('csvFile');
 
-		if (!file) {
+		if (!file || !(file instanceof File)) {
 			return NextResponse.json(
 				{ error: 'No file uploaded' },
 				{ status: 400 },
 			);
 		}
 
-		const csvText: string = await file.text();
+		const csvText = await file.text();
 
-		const { data, errors } = Papa.parse(csvText, {
+		const { data, errors } = Papa.parse<CSVRow>(csvText, {
 			header: true,
 			skipEmptyLines: true,
 			transformHeader: (header) => header.trim().toLowerCase(),
@@ -64,7 +72,7 @@ export async function POST(request: Request) {
 		};
 
 		const insertedContacts = await Promise.all(
-			validatedRecords.map(async (row: MyDataType) => {
+			validatedRecords.map(async (row: CSVRow) => {
 				try {
 					return await Contact.create({
 						name: row.name,
